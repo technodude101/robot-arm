@@ -6,7 +6,7 @@ class App extends Component {
   constructor() {
     super();
 
-    const center = { x: 350, y: 250 }
+    const center = { x: 350, y: 250, fixed: false }
 
     const q1 = {
       x: center.x + 35,
@@ -63,6 +63,11 @@ class App extends Component {
           <input type="range" style={{ width: 300 }} min={-180} max={180} value={q2.rotation} onChange={this.onQ2RangeChange.bind(this)} />
           <input type="number" min={-90} max={0} value={q1.rotation} onChange={this.onQ1RangeChange.bind(this)} />
           <input type="number" min={-180} max={180} value={q2.rotation} onChange={this.onQ2RangeChange.bind(this)} />
+          {/* <input type="checkbox" checked={center.fixed} onChange={this.onCenterFixedChange.bind(this)} /> */}
+          <label>
+            <input type="checkbox" defaultChecked={this.state.center.fixed} onChange={this.onCenterFixedChange.bind(this)} />
+            {center.fixed ? 'fixed horizontal actuator' : 'not fixed'}
+          </label>
         </div>
         <div className="cursor" style={{ bottom: y - 15, left: x - 15 }}></div>
         <div className="base" style={{ width: 50, height: 50, left: center.x, bottom: center.y }}></div>
@@ -103,6 +108,13 @@ class App extends Component {
     }));
   }
 
+  onCenterFixedChange(e) {
+    console.log(arguments);
+    this.setState(prevState => ({
+      center: { ...prevState.center, fixed: ! prevState.center.fixed }
+    }));
+  }
+
   moveTo({ x, y }) {
     window.clearInterval(this.inchCloserTimer);
 
@@ -123,14 +135,14 @@ class App extends Component {
       const centerX = center.x + (xDiff > 100 ? dampenedMovement : (xDiff < -100 ? -dampenedMovement : 0)); // center.x + 0.02 * xDiff;
 
       if (h > (q1Length + q2Length)) {
-        if (center.x !== centerX) {
+        if (center.x !== centerX && ! center.fixed) {
           this.inchCloserTimer = window.setInterval(this.moveTo.bind(this, { x, y }), 16);
         }
 
         return {
-          q1: { ...q1, rotation: -O, x: centerX + 35 },
+          q1: { ...q1, rotation: -O, x: center.fixed ? q1.x : centerX + 35 },
           q2: { ...q2, rotation: 0 },
-          center: { ...center, x: centerX },
+          center: { ...center, x: center.fixed ? center.x : centerX },
           x,
           y,
         };
