@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import './App.css';
 
-const center = { x: 350, y: 250 }
-
 class App extends Component {
 
   constructor() {
     super();
 
-    var q1 = {
+    const center = { x: 350, y: 250 }
+
+    const q1 = {
       x: center.x + 35,
       y: center.y + 35,
       length: 200,
@@ -16,7 +16,7 @@ class App extends Component {
       rotation: 0,
     }
 
-    var q2 = {
+    const q2 = {
       x: 0,
       y: 0,
       length: 150,
@@ -24,7 +24,11 @@ class App extends Component {
       rotation: 0,
     }
 
-    this.state = { q1, q2 }
+    this.state = {
+      center,
+      q1,
+      q2
+    }
   }
 
   componentDidMount() {
@@ -46,7 +50,7 @@ class App extends Component {
   }
 
   render() {
-    const { q1, q2, x, y } = this.state;
+    const { q1, q2, center, x, y } = this.state;
 
     q2.x = q1.x + (q1.length - q1.thickness) * Math.cos(q1.rotation * Math.PI / 180);
     q2.y = q1.y - (q1.length - q1.thickness) * Math.sin(q1.rotation * Math.PI / 180);
@@ -100,20 +104,33 @@ class App extends Component {
   }
 
   moveTo({ x, y }) {
+    window.clearInterval(this.inchCloserTimer);
+
     this.setState(prevState => {
+      const { q1, q2, center } = prevState;
+
       const normalizedX = x - (center.x + 35);
       const normalizedY = y - (center.y + 35);
 
       const h = Math.sqrt(normalizedX**2 + normalizedY**2);
-      const { q1, q2 } = prevState;
       const q1Length = q1.length - q1.thickness;
       const q2Length = q2.length - q2.thickness + 25;
       const O = Math.atan2(normalizedY, normalizedX) * 180 / Math.PI;
+      const xDiff = x - center.x;
+      const speedCoefficient = 2;
+      const dampenedMovement = Math.log(Math.abs(xDiff)) * speedCoefficient;
+      console.log(xDiff, dampenedMovement);
+      const centerX = center.x + (xDiff > 100 ? dampenedMovement : (xDiff < -100 ? -dampenedMovement : 0)); // center.x + 0.02 * xDiff;
 
       if (h > (q1Length + q2Length)) {
+        if (center.x !== centerX) {
+          this.inchCloserTimer = window.setInterval(this.moveTo.bind(this, { x, y }), 16);
+        }
+
         return {
-          q1: { ...q1, rotation: -O },
+          q1: { ...q1, rotation: -O, x: centerX + 35 },
           q2: { ...q2, rotation: 0 },
+          center: { ...center, x: centerX },
           x,
           y,
         };
