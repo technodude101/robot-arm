@@ -2,6 +2,7 @@
   "name": "robot-arm",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://technodude101.github.io/robot-arm/",
   "dependencies": {
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
@@ -9,6 +10,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "predeploy": "yarn run build",
+    "deploy": "gh-pages -d build -n -r git@github.com:technodude101/robot-arm.git",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
